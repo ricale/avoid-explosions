@@ -80,6 +80,7 @@ class CrossBomb {
     if(this._explosionEffectTimer) {
       const explosionProgress = this._explosionEffectTimer.getProgress();
       if(explosionProgress === 1 || options.force) {
+        this._body.clearTint().setVisible(false).setActive(false);
         this._explosions.map(explosion => explosion.setVisible(false).setActive(false))
         this._explosionEffectTimer.remove();
         this._explosionEffectTimer = undefined;
@@ -89,8 +90,7 @@ class CrossBomb {
   }
 
   private _explode() {
-    this._body.setVisible(false)
-      .setActive(false)
+    this._body.setTint(0xff0000);
     this._countdown.setVisible(false)
       .setActive(false)
 
@@ -143,7 +143,12 @@ class CrossBomb {
       .setPosition(this._x, this._y)
       .setVisible(true)
       .setText(this.getCountdownText())
+  }
 
+  init() {
+    this._body.clearTint().setVisible(false).setActive(false);
+    this._explosions.map(explosion => explosion.setVisible(false).setActive(false))
+    this._state = 'inactive';
   }
 
   lockAsExploded() {

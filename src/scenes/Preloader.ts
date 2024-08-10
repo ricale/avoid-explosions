@@ -28,6 +28,7 @@ export class Preloader extends Scene {
 
     this.load.image('bomb01', 'bombs/bomb01.png');
     this.load.image('tile01', 'tiles/tile01.png')
+    this.load.image('tile02', 'tiles/tile02.png')
     this.load.image('explosion01-01', 'explosions/explosion01-01.png');
     this.load.image('explosion01-02', 'explosions/explosion01-02.png');
     this.load.image('explosion01-03', 'explosions/explosion01-03.png');
