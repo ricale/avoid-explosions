@@ -1,32 +1,40 @@
-import { Scene } from 'phaser';
+import { Scene, Types } from 'phaser';
+import Player from '../characters/Player';
+import World01 from '../worlds/World01';
+import { Dir } from '../utils/types';
 
 export class Game extends Scene {
-  camera: Phaser.Cameras.Scene2D.Camera;
-  background: Phaser.GameObjects.Image;
-  msg_text : Phaser.GameObjects.Text;
+  player: Player
+  world: World01
+  cursors?: Types.Input.Keyboard.CursorKeys
+  // background: Phaser.GameObjects.Image;
+  // msg_text : Phaser.GameObjects.Text;
 
   constructor () {
     super('Game');
   }
 
   create () {
-    this.camera = this.cameras.main;
-    this.camera.setBackgroundColor(0x00ff00);
+    this.cursors = this.input.keyboard?.createCursorKeys();
 
-    this.background = this.add.image(512, 384, 'background');
-    this.background.setAlpha(0.5);
+    this.world = new World01(this, { x: 100, y: 100 });
+    this.player = new Player(this, { x: 100, y: 100 });
+    this.world.character = this.player;
+  }
 
-    this.msg_text = this.add.text(512, 384, 'Make something fun!\nand share it with us:\nsupport@phaser.io', {
-      fontFamily: 'Arial Black', fontSize: 38, color: '#ffffff',
-      stroke: '#000000', strokeThickness: 8,
-      align: 'center'
-    });
-    this.msg_text.setOrigin(0.5);
+  update(time: number, delta: number) {
+    if(this.cursors) {
+      if(this.cursors.left.isDown) {
+        this.world.moveCharacterIfPossible(this.player, Dir.LEFT)
+      } else if(this.cursors.right.isDown) {
+        this.world.moveCharacterIfPossible(this.player, Dir.RIGHT)
+      } else if(this.cursors.down.isDown) {
+        this.world.moveCharacterIfPossible(this.player, Dir.DOWN)
+      } else if(this.cursors.up.isDown) {
+        this.world.moveCharacterIfPossible(this.player, Dir.UP)
+      }
+    }
 
-    this.input.once('pointerdown', () => {
-
-      this.scene.start('GameOver');
-
-    });
+    this.player.update(time, delta);
   }
 }
