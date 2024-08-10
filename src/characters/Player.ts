@@ -8,6 +8,7 @@ type PlayerOptions = {
   originY?: number
   width?: number
   height?: number
+  showDebugArea?: boolean
 }
 
 class Player {
@@ -25,6 +26,8 @@ class Player {
   private _speed = 0.3;
   private _moveState?: { dir: Dir, target: number }
 
+  private _showDebugArea: boolean
+
   constructor (scene: Scene, options: PlayerOptions = {}) {
     const {
       x = 0,
@@ -33,6 +36,7 @@ class Player {
       originY = 0,
       width = 64,
       height = 64,
+      showDebugArea = false
     } = options;
     
     this._offset = 15;
@@ -40,26 +44,36 @@ class Player {
     this._y = y;
     this._width = width;
     this._height = height;
+    this._showDebugArea = showDebugArea;
 
-    this._collisionArea = scene.add.rectangle(
-      this._x,
-      this._y,
-      this._width,
-      this._height,
-      0x0000ff,
-      0.3,
-    ).setOrigin(originX, originY)
+    this._collisionArea = scene.add
+      .rectangle(
+        this._x,
+        this._y,
+        this._width,
+        this._height,
+        0x0000ff,
+        0.3,
+      )
+      .setOrigin(originX, originY);
 
-    this._bodyArea = scene.add.rectangle(
-      this._bodyX,
-      this._bodyY,
-      this._bodyWidth,
-      this._bodyHeight,
-      0xff0000,
-      0.3,
-    ).setOrigin(originX, originY);
+    this._bodyArea = scene.add
+      .rectangle(
+        this._bodyX,
+        this._bodyY,
+        this._bodyWidth,
+        this._bodyHeight,
+        0xff0000,
+        0.3,
+      )
+      .setOrigin(originX, originY);
+    
+    if(!this._showDebugArea) {
+      this._collisionArea.setVisible(false).setActive(false);
+      this._bodyArea.setVisible(false).setActive(false);
+    }
 
-    this._body = scene.add.image(this._bodyX, this._bodyY, 'playerIdle01')
+    this._body = scene.add.image(this._bodyX, this._bodyY, 'player01-idle01')
       .setDisplaySize(this._bodyWidth, this._bodyHeight)
       .setOrigin(originX, originY)
   }
@@ -128,8 +142,10 @@ class Player {
     }
 
     this._body.setPosition(this._bodyX, this._bodyY);
-    this._bodyArea.setPosition(this._bodyX, this._bodyY);
-    this._collisionArea.setPosition(this._x, this._y);
+    if(this._showDebugArea) {
+      this._bodyArea.setPosition(this._bodyX, this._bodyY);
+      this._collisionArea.setPosition(this._x, this._y);
+    }
   }
 
   faceTo(dir: Dir, target: number) {
