@@ -19,7 +19,6 @@ export class Game extends Scene {
 
     this.world = new World01(this, { x: 100, y: 100 });
     this.player = new Player(this, { x: 100, y: 100 });
-    this.world.character = this.player;
   }
 
   update(time: number, delta: number) {
@@ -35,6 +34,7 @@ export class Game extends Scene {
       }
     }
 
+    this.world.update(time, delta);
     this.player.update(time, delta);
   }
 }

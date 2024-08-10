@@ -1,6 +1,7 @@
 import { GameObjects, Scene } from "phaser";
 import Player from "../characters/Player";
 import { Dir } from "../utils/types";
+import CrossBomb from "../bombs/CrossBomb";
 
 type World01Options = {
   x?: number
@@ -9,11 +10,12 @@ type World01Options = {
   gap?: number
   columnCount?: number
   rowCount?: number
+  intervalForSetBomb?: number
 }
 
 class World01 {
-  tiles: GameObjects.Image[][]
-  character: Player
+  private _tiles: GameObjects.Image[][]
+  private _bombs: CrossBomb[]
 
   private _x: number
   private _y: number
@@ -21,6 +23,9 @@ class World01 {
   private _gap: number
   private _columnCount: number
   private _rowCount: number
+
+  private _pastMsForSetBomb: number;
+  private _intervalForSetBomb: number;
 
   constructor (scene: Scene, options: World01Options = {}) {
     const {
@@ -30,6 +35,7 @@ class World01 {
       gap = 4,
       columnCount = 5,
       rowCount = 5,
+      intervalForSetBomb = 4000,
     } = options;
 
     this._x = x;
@@ -39,7 +45,9 @@ class World01 {
     this._columnCount = columnCount;
     this._rowCount = rowCount;
 
-    this.tiles = [...new Array(this._rowCount)].map((_, i) =>
+    this._intervalForSetBomb = intervalForSetBomb;
+
+    this._tiles = [...new Array(this._rowCount)].map((_, i) =>
       [...new Array(this._columnCount)].map((_, j) => {
         return scene.add.image(
           this._x + this._tileSize * j + this._gap * (j),
@@ -50,6 +58,17 @@ class World01 {
           .setDisplaySize(this._tileSize, this._tileSize)
       })
     );
+
+    const bombCount = Math.min(this._rowCount, this._columnCount) - 1;
+    this._bombs = [...new Array(bombCount)].map(() => {
+      return new CrossBomb(scene, {
+        explosionStep: this._tileSize + this._gap,
+        msToExplosion: this._intervalForSetBomb - 1000,
+        explosionCountInDir: 4,
+      })
+    })
+
+    this._pastMsForSetBomb = this._intervalForSetBomb - 1000;
   }
 
   private get _step () {
@@ -99,9 +118,33 @@ class World01 {
     character.faceTo(dir, target);
   }
 
-  // update (time: number, delta: number) {
+  private _getRandom(cands: number[]) {
+    const random = Math.floor(Math.random() * cands.length);
+    return cands.splice(random, 1)[0];
+  }
 
-  // }
+  private _putBombs() {
+    const colCands = [...new Array(this._columnCount)].map((_, i) => i);
+    const rowCands = [...new Array(this._rowCount)].map((_, i) => i);
+    
+    for(const bomb of this._bombs) {
+      const col = this._getRandom(colCands);
+      const row = this._getRandom(rowCands);
+      bomb.activate(
+        col * this._step + this._x,
+        row * this._step + this._x
+      );
+    }
+  }
+
+  update (_time: number, delta: number) {
+    this._pastMsForSetBomb += delta;
+    if(this._pastMsForSetBomb > this._intervalForSetBomb) {
+      this._pastMsForSetBomb = 0;
+      this._putBombs();
+    }
+    this._bombs.map(bomb => bomb.update(_time, delta));
+  }
 }
 
-export default World01
+export default World01;

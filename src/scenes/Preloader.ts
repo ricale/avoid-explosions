@@ -26,36 +26,36 @@ export class Preloader extends Scene {
     //  Load the assets for the game - Replace with your own assets
     this.load.setPath("assets");
 
-    this.load.image('bomb', 'bomb.png');
-    this.load.image('tile01', 'tiles/tile_01.png')
-    this.load.image('explosion01', 'explosions/explosion_01.png');
-    this.load.image('explosion02', 'explosions/explosion_02.png');
-    this.load.image('explosion03', 'explosions/explosion_03.png');
-    this.load.image('explosion04', 'explosions/explosion_04.png');
-    this.load.image('explosion05', 'explosions/explosion_05.png');
-    this.load.image('explosion06', 'explosions/explosion_06.png');
-    this.load.image('explosion07', 'explosions/explosion_07.png');
-    this.load.image('explosion08', 'explosions/explosion_08.png');
-    this.load.image('explosion09', 'explosions/explosion_09.png');
-    this.load.image('explosion10', 'explosions/explosion_10.png');
-    this.load.image('playerIdle01', 'characters/orc_01/idle/orc_idle_00.png');
-    this.load.image('playerIdle02', 'characters/orc_01/idle/orc_idle_01.png');
-    this.load.image('playerIdle03', 'characters/orc_01/idle/orc_idle_02.png');
-    this.load.image('playerIdle04', 'characters/orc_01/idle/orc_idle_03.png');
-    this.load.image('playerIdle05', 'characters/orc_01/idle/orc_idle_04.png');
-    this.load.image('playerIdle06', 'characters/orc_01/idle/orc_idle_05.png');
-    this.load.image('playerIdle07', 'characters/orc_01/idle/orc_idle_06.png');
-    this.load.image('playerIdle08', 'characters/orc_01/idle/orc_idle_07.png');
-    this.load.image('playerIdle09', 'characters/orc_01/idle/orc_idle_08.png');
-    this.load.image('playerIdle10', 'characters/orc_01/idle/orc_idle_09.png');
-    this.load.image('playerIdle11', 'characters/orc_01/idle/orc_idle_10.png');
-    this.load.image('playerIdle12', 'characters/orc_01/idle/orc_idle_11.png');
-    this.load.image('playerIdle13', 'characters/orc_01/idle/orc_idle_12.png');
-    this.load.image('playerIdle14', 'characters/orc_01/idle/orc_idle_13.png');
-    this.load.image('playerIdle15', 'characters/orc_01/idle/orc_idle_14.png');
-    this.load.image('playerIdle16', 'characters/orc_01/idle/orc_idle_15.png');
-    this.load.image('playerIdle17', 'characters/orc_01/idle/orc_idle_16.png');
-    this.load.image('playerIdle18', 'characters/orc_01/idle/orc_idle_17.png');
+    this.load.image('bomb01', 'bombs/bomb01.png');
+    this.load.image('tile01', 'tiles/tile01.png')
+    this.load.image('explosion01-01', 'explosions/explosion01-01.png');
+    this.load.image('explosion01-02', 'explosions/explosion01-02.png');
+    this.load.image('explosion01-03', 'explosions/explosion01-03.png');
+    this.load.image('explosion01-04', 'explosions/explosion01-04.png');
+    this.load.image('explosion01-05', 'explosions/explosion01-05.png');
+    this.load.image('explosion01-06', 'explosions/explosion01-06.png');
+    this.load.image('explosion01-07', 'explosions/explosion01-07.png');
+    this.load.image('explosion01-08', 'explosions/explosion01-08.png');
+    this.load.image('explosion01-09', 'explosions/explosion01-09.png');
+    this.load.image('explosion01-10', 'explosions/explosion01-10.png');
+    this.load.image('player01-idle01', 'characters/orc01/idle/orc01-idle00.png');
+    this.load.image('player01-idle02', 'characters/orc01/idle/orc01-idle01.png');
+    this.load.image('player01-idle03', 'characters/orc01/idle/orc01-idle02.png');
+    this.load.image('player01-idle04', 'characters/orc01/idle/orc01-idle03.png');
+    this.load.image('player01-idle05', 'characters/orc01/idle/orc01-idle04.png');
+    this.load.image('player01-idle06', 'characters/orc01/idle/orc01-idle05.png');
+    this.load.image('player01-idle07', 'characters/orc01/idle/orc01-idle06.png');
+    this.load.image('player01-idle08', 'characters/orc01/idle/orc01-idle07.png');
+    this.load.image('player01-idle09', 'characters/orc01/idle/orc01-idle08.png');
+    this.load.image('player01-idle10', 'characters/orc01/idle/orc01-idle09.png');
+    this.load.image('player01-idle11', 'characters/orc01/idle/orc01-idle10.png');
+    this.load.image('player01-idle12', 'characters/orc01/idle/orc01-idle11.png');
+    this.load.image('player01-idle13', 'characters/orc01/idle/orc01-idle12.png');
+    this.load.image('player01-idle14', 'characters/orc01/idle/orc01-idle13.png');
+    this.load.image('player01-idle15', 'characters/orc01/idle/orc01-idle14.png');
+    this.load.image('player01-idle16', 'characters/orc01/idle/orc01-idle15.png');
+    this.load.image('player01-idle17', 'characters/orc01/idle/orc01-idle16.png');
+    this.load.image('player01-idle18', 'characters/orc01/idle/orc01-idle17.png');
 
     // this.load.image("logo", "logo.png");
   }
