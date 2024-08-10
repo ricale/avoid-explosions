@@ -64,27 +64,16 @@ class CrossBomb {
     });
   }
 
-  private getCountdownText() {
-    return (this._remainingMs / 1000).toFixed(1)
+  get state () {
+    return this._state;
   }
 
-  activate(x: number, y: number) {
-    this._deactivateExplosionsIfNeeded({ force: true });
+  get explosionCollisionObjects() {
+    return this._explosions;
+  }
 
-    this._x = x;
-    this._y = y;
-    this._state = 'active';
-
-    this._body.setActive(true)
-      .setPosition(this._x, this._y)
-      .setVisible(true);
-
-    this._remainingMs = this._msToExplosion;
-    this._countdown.setActive(false)
-      .setPosition(this._x, this._y)
-      .setVisible(true)
-      .setText(this.getCountdownText())
-
+  private getCountdownText() {
+    return (this._remainingMs / 1000).toFixed(1)
   }
 
   private _deactivateExplosionsIfNeeded (options: {force?: boolean} = {}) {
@@ -136,6 +125,35 @@ class CrossBomb {
     });
     this._clock.addEvent(this._explosionEffectTimer)
     this._state = 'exploded';
+  }
+
+  activate(x: number, y: number) {
+    this._deactivateExplosionsIfNeeded({ force: true });
+
+    this._x = x;
+    this._y = y;
+    this._state = 'active';
+
+    this._body.setActive(true)
+      .setPosition(this._x, this._y)
+      .setVisible(true);
+
+    this._remainingMs = this._msToExplosion;
+    this._countdown.setActive(false)
+      .setPosition(this._x, this._y)
+      .setVisible(true)
+      .setText(this.getCountdownText())
+
+  }
+
+  lockAsExploded() {
+    if(this._state !== 'exploded') {
+      return;
+    }
+    if(this._explosionEffectTimer) {
+      this._explosionEffectTimer.remove();
+      this._explosionEffectTimer = undefined;
+    }
   }
 
   update(_time: number, delta: number) {

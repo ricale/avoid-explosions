@@ -1,4 +1,4 @@
-import { GameObjects, Scene } from "phaser";
+import { Actions, GameObjects, Scene, Types } from "phaser";
 import Player from "../characters/Player";
 import { Dir } from "../utils/types";
 import CrossBomb from "../bombs/CrossBomb";
@@ -15,7 +15,10 @@ type World01Options = {
 
 class World01 {
   private _tiles: GameObjects.Image[][]
+  private _player: Player;
   private _bombs: CrossBomb[]
+
+  private _cursors: Types.Input.Keyboard.CursorKeys | undefined
 
   private _x: number
   private _y: number
@@ -35,7 +38,7 @@ class World01 {
       gap = 4,
       columnCount = 5,
       rowCount = 5,
-      intervalForSetBomb = 4000,
+      intervalForSetBomb = 3500,
     } = options;
 
     this._x = x;
@@ -59,6 +62,8 @@ class World01 {
       })
     );
 
+    this._player = new Player(scene, { x: 100, y: 100 });
+
     const bombCount = Math.min(this._rowCount, this._columnCount) - 1;
     this._bombs = [...new Array(bombCount)].map(() => {
       return new CrossBomb(scene, {
@@ -66,7 +71,9 @@ class World01 {
         msToExplosion: this._intervalForSetBomb - 1000,
         explosionCountInDir: 4,
       })
-    })
+    });
+
+    this._cursors = scene.input.keyboard?.createCursorKeys();
 
     this._pastMsForSetBomb = this._intervalForSetBomb - 1000;
   }
@@ -110,7 +117,7 @@ class World01 {
     }
   }
 
-  moveCharacterIfPossible (character: Player, dir: Dir) {
+  private _moveCharacterIfPossible (character: Player, dir: Dir) {
     const { isValid, target } = this._isValidToMove(character, dir);
     if(!isValid) {
       return;
@@ -124,6 +131,10 @@ class World01 {
   }
 
   private _putBombs() {
+    if(this._player.isDead) {
+      return;
+    }
+
     const colCands = [...new Array(this._columnCount)].map((_, i) => i);
     const rowCands = [...new Array(this._rowCount)].map((_, i) => i);
     
@@ -137,13 +148,55 @@ class World01 {
     }
   }
 
-  update (_time: number, delta: number) {
+  private _updatePlayer(time: number, delta: number) {
+    if(this._cursors) {
+      if(this._cursors.left.isDown) {
+        this._moveCharacterIfPossible(this._player, Dir.LEFT)
+      } else if(this._cursors.right.isDown) {
+        this._moveCharacterIfPossible(this._player, Dir.RIGHT)
+      } else if(this._cursors.down.isDown) {
+        this._moveCharacterIfPossible(this._player, Dir.DOWN)
+      } else if(this._cursors.up.isDown) {
+        this._moveCharacterIfPossible(this._player, Dir.UP)
+      }
+    }
+    this._player.update(time, delta);
+  }
+
+  private _updateBombs(time: number, delta: number) {
     this._pastMsForSetBomb += delta;
     if(this._pastMsForSetBomb > this._intervalForSetBomb) {
       this._pastMsForSetBomb = 0;
       this._putBombs();
     }
-    this._bombs.map(bomb => bomb.update(_time, delta));
+    this._bombs.map(bomb => bomb.update(time, delta));
+  }
+
+  private _checkCollision() {
+    for(const bomb of this._bombs) {
+      if(bomb.state !== 'exploded') {
+        continue;
+      }
+      const collided = !!Actions.GetFirst(
+        bomb.explosionCollisionObjects,
+        { x: this._player.x, y: this._player.y },
+      )
+      if(collided) {
+        console.log('hit');
+        this._player.die();
+        this._bombs.map(item => item.lockAsExploded())
+        break;
+      }
+    }
+  }
+
+  update (time: number, delta: number) {
+    this._updatePlayer(time, delta);
+    this._updateBombs(time, delta)
+
+    if(!this._player.isDead) {
+      this._checkCollision();
+    }
   }
 }
 
