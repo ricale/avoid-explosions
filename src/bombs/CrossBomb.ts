@@ -150,7 +150,7 @@ class CrossBomb {
       .setVisible(true);
 
     this._remainingMs = this._msToExplosion;
-    this._countdown.setActive(false)
+    this._countdown.setActive(true)
       .setPosition(this._x, this._y)
       .setVisible(true)
       .setText(this.getCountdownText())

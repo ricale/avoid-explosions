@@ -2,6 +2,7 @@ import { Actions, Scene, Types } from "phaser";
 import Player from "../characters/Player";
 import { Dir } from "../utils/types";
 import CrossBomb from "../bombs/CrossBomb";
+import Timer from "../Timer";
 
 type World01Options = {
   x?: number
@@ -16,6 +17,7 @@ type World01Options = {
 class World01 {
   private _player: Player;
   private _bombs: CrossBomb[]
+  private _timer: Timer
 
   private _cursors: Types.Input.Keyboard.CursorKeys | undefined
 
@@ -53,6 +55,8 @@ class World01 {
 
     this._intervalForSetBomb = intervalForSetBomb;
 
+    const boardWidth = (this._tileSize + this._gap) * (this._columnCount + 1);
+    const boardHeight = (this._tileSize + this._gap) * (this._rowCount + 1);
     scene.add
       .image(
         this._x - this._gap - this._tileSize / 2  ,
@@ -60,10 +64,7 @@ class World01 {
         'tile02'
       )
       .setOrigin(0, 0)
-      .setDisplaySize(
-        (this._tileSize + this._gap) * (this._columnCount + 1),
-        (this._tileSize + this._gap) * (this._rowCount + 1),
-      );
+      .setDisplaySize(boardWidth, boardHeight);
 
     [...new Array(this._rowCount)].map((_, i) =>
       [...new Array(this._columnCount)].map((_, j) => {
@@ -101,6 +102,12 @@ class World01 {
     this._bombs = [...new Array(bombCount)].map(() => {
       return new CrossBomb(scene, bombOptions)
     });
+
+    this._timer = new Timer(scene, {
+      x: boardWidth + 20,
+      y: 100,
+    })
+    this._timer.start();
 
     this._cursors = scene.input.keyboard?.createCursorKeys();
 
@@ -205,6 +212,13 @@ class World01 {
     this._bombs.map(bomb => bomb.update(time, delta));
   }
 
+  private _playerDied() {
+    this._state = 'inactive';
+    this._player.die();
+    this._bombs.map(item => item.lockAsExploded())
+    this._timer.stop();
+  }
+
   private _checkCollision() {
     for(const bomb of this._bombs) {
       if(bomb.state !== 'exploded') {
@@ -215,9 +229,7 @@ class World01 {
         { x: this._player.x, y: this._player.y },
       )
       if(collided) {
-        this._state = 'inactive';
-        this._player.die();
-        this._bombs.map(item => item.lockAsExploded())
+        this._playerDied();
         break;
       }
     }
@@ -230,11 +242,13 @@ class World01 {
     this._pastMsForSetBomb = this._intervalForSetBomb - 1000;
     this._bombs.map(item => item.init())
     this._player.init(this._x, this._y);
+    this._timer.start();
   }
 
   update (time: number, delta: number) {
     this._updatePlayer(time, delta);
     this._updateBombs(time, delta)
+    this._timer.update(time, delta);
 
     if(!this._player.isDead) {
       this._checkCollision();
