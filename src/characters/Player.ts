@@ -111,6 +111,14 @@ class Player {
     return this._state === 'dead';
   }
 
+  private _setPosition() {
+    this._body.setPosition(this._bodyX, this._bodyY);
+    this._collisionArea.setPosition(this._x, this._y);
+    if(this._showDebugArea) {
+      this._bodyArea.setPosition(this._bodyX, this._bodyY);
+    }
+  }
+
   private _moveIfNeeded(delta: number) {
     if(this.isDead) {
       return;
@@ -153,11 +161,15 @@ class Player {
         break;
     }
 
-    this._body.setPosition(this._bodyX, this._bodyY);
-    this._collisionArea.setPosition(this._x, this._y);
-    if(this._showDebugArea) {
-      this._bodyArea.setPosition(this._bodyX, this._bodyY);
-    }
+    this._setPosition()
+  }
+
+  init(x: number, y: number) {
+    this._state = 'alive';
+    this._x = x;
+    this._y = y;
+    this._setPosition();
+    this._body.clearTint();
   }
 
   faceTo(dir: Dir, target: number) {

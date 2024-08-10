@@ -30,6 +30,8 @@ class World01 {
   private _pastMsForSetBomb: number;
   private _intervalForSetBomb: number;
 
+  private _state: 'active' | 'inactive';
+
   constructor (scene: Scene, options: World01Options = {}) {
     const {
       x = 0,
@@ -41,8 +43,10 @@ class World01 {
       intervalForSetBomb = 3500,
     } = options;
 
-    this._x = x;
-    this._y = y;
+    this._state = 'active';
+
+    this._x = x + tileSize / 2 + gap;
+    this._y = y + tileSize / 2 + gap;
     this._tileSize = tileSize;
     this._gap = gap;
     this._columnCount = columnCount;
@@ -50,27 +54,47 @@ class World01 {
 
     this._intervalForSetBomb = intervalForSetBomb;
 
+    scene.add
+      .image(
+        this._x - this._gap - this._tileSize / 2  ,
+        this._y - this._gap - this._tileSize / 2  ,
+        'tile02'
+      )
+      .setOrigin(0, 0)
+      .setDisplaySize(
+        (this._tileSize + this._gap) * (this._columnCount + 1),
+        (this._tileSize + this._gap) * (this._rowCount + 1),
+      );
+
     this._tiles = [...new Array(this._rowCount)].map((_, i) =>
       [...new Array(this._columnCount)].map((_, j) => {
-        return scene.add.image(
-          this._x + this._tileSize * j + this._gap * (j),
-          this._y + this._tileSize * i + this._gap * (i),
-          'tile01'
-        )
+        return scene.add
+          .image(
+            this._x + this._tileSize * j + this._gap * (j),
+            this._y + this._tileSize * i + this._gap * (i),
+            'tile01'
+          )
           .setOrigin(0, 0)
           .setDisplaySize(this._tileSize, this._tileSize)
       })
     );
 
-    this._player = new Player(scene, { x: 100, y: 100 });
-
-    const bombCount = Math.min(this._rowCount, this._columnCount) - 1;
+    const bombCount = Math.min(this._rowCount, this._columnCount) - 2;
     this._bombs = [...new Array(bombCount)].map(() => {
       return new CrossBomb(scene, {
+        width: this._tileSize,
+        height: this._tileSize,
         explosionStep: this._tileSize + this._gap,
         msToExplosion: this._intervalForSetBomb - 1000,
-        explosionCountInDir: 4,
+        explosionCountInDir: Math.max(this._rowCount, this._columnCount),
       })
+    });
+
+    this._player = new Player(scene, {
+      x: this._x,
+      y: this._y,
+      width: this._tileSize,
+      height: this._tileSize,
     });
 
     this._cursors = scene.input.keyboard?.createCursorKeys();
@@ -80,6 +104,10 @@ class World01 {
 
   private get _step () {
     return this._tileSize + this._gap
+  }
+
+  get isActive () {
+    return this._state === 'active';
   }
 
   private _isValidToMove (character: Player, dir: Dir) {
@@ -143,7 +171,7 @@ class World01 {
       const row = this._getRandom(rowCands);
       bomb.activate(
         col * this._step + this._x,
-        row * this._step + this._x
+        row * this._step + this._y
       );
     }
   }
@@ -182,12 +210,21 @@ class World01 {
         { x: this._player.x, y: this._player.y },
       )
       if(collided) {
-        console.log('hit');
+        this._state = 'inactive';
         this._player.die();
         this._bombs.map(item => item.lockAsExploded())
         break;
       }
     }
+  }
+
+  restart() {
+    if(this.isActive) {
+      return;
+    }
+    this._pastMsForSetBomb = this._intervalForSetBomb - 1000;
+    this._bombs.map(item => item.init())
+    this._player.init(this._x, this._y);
   }
 
   update (time: number, delta: number) {
