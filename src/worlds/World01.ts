@@ -1,4 +1,4 @@
-import { Actions, GameObjects, Scene, Types } from "phaser";
+import { Actions, Scene, Types } from "phaser";
 import Player from "../characters/Player";
 import { Dir } from "../utils/types";
 import CrossBomb from "../bombs/CrossBomb";
@@ -14,7 +14,6 @@ type World01Options = {
 }
 
 class World01 {
-  private _tiles: GameObjects.Image[][]
   private _player: Player;
   private _bombs: CrossBomb[]
 
@@ -66,7 +65,7 @@ class World01 {
         (this._tileSize + this._gap) * (this._rowCount + 1),
       );
 
-    this._tiles = [...new Array(this._rowCount)].map((_, i) =>
+    [...new Array(this._rowCount)].map((_, i) =>
       [...new Array(this._columnCount)].map((_, j) => {
         return scene.add
           .image(
@@ -79,22 +78,28 @@ class World01 {
       })
     );
 
-    const bombCount = Math.min(this._rowCount, this._columnCount) - 2;
-    this._bombs = [...new Array(bombCount)].map(() => {
-      return new CrossBomb(scene, {
-        width: this._tileSize,
-        height: this._tileSize,
-        explosionStep: this._tileSize + this._gap,
-        msToExplosion: this._intervalForSetBomb - 1000,
-        explosionCountInDir: Math.max(this._rowCount, this._columnCount),
-      })
-    });
-
     this._player = new Player(scene, {
       x: this._x,
       y: this._y,
       width: this._tileSize,
       height: this._tileSize,
+    });
+
+    const bombCount = Math.min(this._rowCount, this._columnCount) - 2;
+    const explosionStep = this._tileSize + this._gap;
+    const bombOptions = {
+      width: this._tileSize,
+      height: this._tileSize,
+      explosionStep: this._tileSize + this._gap,
+      msToExplosion: this._intervalForSetBomb - 1000,
+      explosionCountInDir: Math.max(this._rowCount, this._columnCount),
+      explosionMinX: this._x,
+      explosionMaxX: this._x + explosionStep * this._columnCount,
+      explosionMinY: this._y,
+      explosionMaxY: this._y + explosionStep * this._rowCount,
+    };
+    this._bombs = [...new Array(bombCount)].map(() => {
+      return new CrossBomb(scene, bombOptions)
     });
 
     this._cursors = scene.input.keyboard?.createCursorKeys();

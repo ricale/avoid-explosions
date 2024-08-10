@@ -12,7 +12,6 @@ type PlayerOptions = {
 }
 
 class Player {
-
   private _body: GameObjects.Image
   private _bodyArea: GameObjects.Rectangle
   private _collisionArea: GameObjects.Rectangle
@@ -184,7 +183,7 @@ class Player {
 
   die() {
     this._state = 'dead';
-    this._body.setTint(0xff0000);
+    this._body.setTint(0x000000);
   }
 
   update (_time: number, delta: number) {

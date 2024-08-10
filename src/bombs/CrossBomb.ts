@@ -5,8 +5,11 @@ type CrossBombOptions = {
   height?: number
   msToExplosion?: number
   explosionStep?: number
-  explosionCountInDir?: number
   explosionDuration?: number
+  explosionMinX: number
+  explosionMaxX: number
+  explosionMinY: number
+  explosionMaxY: number
 }
 
 class CrossBomb {
@@ -25,16 +28,22 @@ class CrossBomb {
   private _explosionDuration: number
 
   private _explosionStep: number
-  private _explosionCountInDir: number
+  private _explosionMinX: number
+  private _explosionMaxX: number
+  private _explosionMinY: number
+  private _explosionMaxY: number
 
-  constructor(scene: Scene, options: CrossBombOptions = {}) {
+  constructor(scene: Scene, options: CrossBombOptions) {
     const {
       width = 64,
       height = 64,
       msToExplosion = 4000,
       explosionStep = 64,
-      explosionCountInDir = 4,
       explosionDuration = 600,
+      explosionMinX,
+      explosionMaxX,
+      explosionMinY,
+      explosionMaxY,
     } = options;
 
     this._clock = scene.time
@@ -51,11 +60,21 @@ class CrossBomb {
       .setActive(false);
 
     this._msToExplosion = msToExplosion;
-    this._explosionStep = explosionStep;
-    this._explosionCountInDir = explosionCountInDir;
     this._explosionDuration = explosionDuration;
+    this._explosionStep = explosionStep;
+    this._explosionMinX = explosionMinX;
+    this._explosionMaxX = explosionMaxX;
+    this._explosionMinY = explosionMinY;
+    this._explosionMaxY = explosionMaxY;
 
-    this._explosions = [...new Array(this._explosionCountInDir * 4 + 1)].map(() => {
+    const explosionCountInColumn = Math.floor(
+      (this._explosionMaxY - this._explosionMinY) / this._explosionStep
+    );
+    const explosionCountInRow = Math.floor(
+      (this._explosionMaxX - this._explosionMinX) / this._explosionStep
+    );
+    const explosionCount = explosionCountInColumn + explosionCountInRow - 1;
+    this._explosions = [...new Array(explosionCount)].map(() => {
       return scene.add.image(0, 0, 'explosion01-06')
         .setOrigin(0, 0)
         .setDisplaySize(width, height)
@@ -94,29 +113,21 @@ class CrossBomb {
     this._countdown.setVisible(false)
       .setActive(false)
 
-    const countInDirArray = [...new Array(this._explosionCountInDir)];
-    const diffs = [
-      ...countInDirArray.map((_, i) =>
-        [this._explosionStep * (i + 1), 0]
-      ),
-      ...countInDirArray.map((_, i) =>
-        [-this._explosionStep * (i + 1), 0]
-      ),
-      ...countInDirArray.map((_, i) =>
-        [0, this._explosionStep * (i + 1)]
-      ),
-      ...countInDirArray.map((_, i) =>
-        [0, -this._explosionStep * (i + 1)]
-      ),
-      [0, 0],
-    ]
+    const coords: [number, number][] = [[this._x, this._y]];
+    for(let x = this._explosionMinX; x < this._explosionMaxX; x += this._explosionStep) {
+      if(x !== this._x) {
+        coords.push([x, this._y]);
+      }
+    }
+    for(let y = this._explosionMinX; y < this._explosionMaxX; y += this._explosionStep) {
+      if(y !== this._y) {
+        coords.push([this._x, y]);
+      }
+    }
 
     for(let i = 0; i < this._explosions.length; i++) {
       this._explosions[i].setActive(true)
-        .setPosition(
-          this._x + diffs[i][0],
-          this._y + diffs[i][1]
-        )
+        .setPosition(coords[i][0], coords[i][1])
         .setVisible(true);
     }
 
