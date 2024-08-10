@@ -24,6 +24,7 @@ class Player {
   private _height: number
 
   private _speed = 0.3;
+  private _state: 'alive' | 'dead' = 'alive';
   private _moveState?: { dir: Dir, target: number }
 
   private _showDebugArea: boolean
@@ -69,7 +70,7 @@ class Player {
       .setOrigin(originX, originY);
     
     if(!this._showDebugArea) {
-      this._collisionArea.setVisible(false).setActive(false);
+      this._collisionArea.setVisible(false);
       this._bodyArea.setVisible(false).setActive(false);
     }
 
@@ -102,7 +103,18 @@ class Player {
     return this._y;
   }
 
+  get collisionObject () {
+    return this._collisionArea
+  }
+
+  get isDead() {
+    return this._state === 'dead';
+  }
+
   private _moveIfNeeded(delta: number) {
+    if(this.isDead) {
+      return;
+    }
     if(!this._moveState) {
       return;
     }
@@ -142,17 +154,25 @@ class Player {
     }
 
     this._body.setPosition(this._bodyX, this._bodyY);
+    this._collisionArea.setPosition(this._x, this._y);
     if(this._showDebugArea) {
       this._bodyArea.setPosition(this._bodyX, this._bodyY);
-      this._collisionArea.setPosition(this._x, this._y);
     }
   }
 
   faceTo(dir: Dir, target: number) {
+    if(this.isDead) {
+      return;
+    }
     if(this._moveState) {
       return;
     }
     this._moveState = { dir: dir, target };
+  }
+
+  die() {
+    this._state = 'dead';
+    this._body.setTint(0xff0000);
   }
 
   update (_time: number, delta: number) {
