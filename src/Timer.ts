@@ -28,6 +28,14 @@ class Timer {
       .setActive(false)
   }
 
+  get state () {
+    return this._state;
+  }
+
+  get currentTime() {
+    return this._pastMs;
+  }
+
   private _getTimeText() {
     const ms = Math.floor(this._pastMs % 1000)
     const seconds = Math.floor(this._pastMs / 1000) % 60
