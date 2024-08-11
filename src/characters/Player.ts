@@ -12,7 +12,7 @@ type PlayerOptions = {
 }
 
 class Player {
-  private _body: GameObjects.Image
+  private _body: GameObjects.Sprite
   private _bodyArea: GameObjects.Rectangle
   private _collisionArea: GameObjects.Rectangle
 
@@ -23,7 +23,7 @@ class Player {
   private _height: number
 
   private _speed = 0.3;
-  private _state: 'alive' | 'dead' = 'alive';
+  private _state: 'idle' | 'running' | 'dead' = 'idle';
   private _moveState?: { dir: Dir, target: number }
 
   private _showDebugArea: boolean
@@ -73,9 +73,11 @@ class Player {
       this._bodyArea.setVisible(false).setActive(false);
     }
 
-    this._body = scene.add.image(this._bodyX, this._bodyY, 'player01-idle01')
+    this._body = scene.add.sprite(this._bodyX, this._bodyY, 'player01-idle01')
       .setDisplaySize(this._bodyWidth, this._bodyHeight)
       .setOrigin(originX, originY)
+
+    this.init();
   }
 
   private get _bodyX () {
@@ -118,13 +120,36 @@ class Player {
     }
   }
 
+  private _setState(newState: typeof this._state) {
+    if(this._state === newState) {
+      return;
+    }
+
+    this._state = newState;
+    switch(this._state) {
+      case 'idle':
+        this._body.play('player01-idle');
+        break;
+      case 'running':
+        this._body.play('player01-running');
+        break;
+      case 'dead':
+        this._body.play('player01-dying');
+        // this._body.setTint(0x000000);
+        break;
+    }
+  }
+
   private _moveIfNeeded(delta: number) {
     if(this.isDead) {
       return;
     }
     if(!this._moveState) {
+      this._setState('idle');
       return;
     }
+
+    this._setState('running');
 
     const { dir, target } = this._moveState;
 
@@ -163,12 +188,13 @@ class Player {
     this._setPosition()
   }
 
-  init(x: number, y: number) {
-    this._state = 'alive';
+  init(x = this._x, y = this._y) {
+    this._setState('idle');
     this._x = x;
     this._y = y;
     this._setPosition();
     this._body.clearTint();
+    this._body.play('player01-idle');
   }
 
   faceTo(dir: Dir, target: number) {
@@ -182,8 +208,7 @@ class Player {
   }
 
   die() {
-    this._state = 'dead';
-    this._body.setTint(0x000000);
+    this._setState('dead');
   }
 
   update (_time: number, delta: number) {

@@ -79,13 +79,6 @@ class World01 {
       })
     );
 
-    this._player = new Player(scene, {
-      x: this._x,
-      y: this._y,
-      width: this._tileSize,
-      height: this._tileSize,
-    });
-
     const bombCount = Math.min(this._rowCount, this._columnCount) - 2;
     const explosionStep = this._tileSize + this._gap;
     const bombOptions = {
@@ -101,6 +94,13 @@ class World01 {
     };
     this._bombs = [...new Array(bombCount)].map(() => {
       return new CrossBomb(scene, bombOptions)
+    });
+
+    this._player = new Player(scene, {
+      x: this._x,
+      y: this._y,
+      width: this._tileSize,
+      height: this._tileSize,
     });
 
     this._timer = new Timer(scene, {

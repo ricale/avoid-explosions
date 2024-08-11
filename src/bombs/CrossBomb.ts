@@ -16,7 +16,7 @@ class CrossBomb {
   private _clock: Time.Clock
   private _body: GameObjects.Image
   private _countdown: GameObjects.Text
-  private _explosions: GameObjects.Image[]
+  private _explosions: GameObjects.Sprite[]
   
   private _x: number
   private _y: number
@@ -75,7 +75,7 @@ class CrossBomb {
     );
     const explosionCount = explosionCountInColumn + explosionCountInRow - 1;
     this._explosions = [...new Array(explosionCount)].map(() => {
-      return scene.add.image(0, 0, 'explosion01-06')
+      return scene.add.sprite(0, 0, 'explosion01-01')
         .setOrigin(0, 0)
         .setDisplaySize(width, height)
         .setVisible(false)
@@ -128,7 +128,8 @@ class CrossBomb {
     for(let i = 0; i < this._explosions.length; i++) {
       this._explosions[i].setActive(true)
         .setPosition(coords[i][0], coords[i][1])
-        .setVisible(true);
+        .setVisible(true)
+        .play('explosion01');
     }
 
     this._explosionEffectTimer = new Time.TimerEvent({
