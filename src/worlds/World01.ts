@@ -2,7 +2,8 @@ import { Actions, Scene, Types } from "phaser";
 import Player from "../characters/Player";
 import { Dir } from "../utils/types";
 import CrossBomb from "../bombs/CrossBomb";
-import Timer from "../Timer";
+
+type World01State = 'active' | 'inactive';
 
 type World01Options = {
   x?: number
@@ -12,12 +13,12 @@ type World01Options = {
   columnCount?: number
   rowCount?: number
   intervalForSetBomb?: number
+  onChangeState?: (state: World01State) => void
 }
 
 class World01 {
   private _player: Player;
   private _bombs: CrossBomb[]
-  private _timer: Timer
 
   private _cursors: Types.Input.Keyboard.CursorKeys | undefined
 
@@ -31,7 +32,8 @@ class World01 {
   private _pastMsForSetBomb: number;
   private _intervalForSetBomb: number;
 
-  private _state: 'active' | 'inactive';
+  private _state: World01State = 'inactive';
+  private _onChangeState: (state: World01State) => void
 
   constructor (scene: Scene, options: World01Options = {}) {
     const {
@@ -42,9 +44,8 @@ class World01 {
       columnCount = 5,
       rowCount = 5,
       intervalForSetBomb = 3500,
+      onChangeState = () => {},
     } = options;
-
-    this._state = 'active';
 
     this._x = x + tileSize / 2 + gap;
     this._y = y + tileSize / 2 + gap;
@@ -52,9 +53,23 @@ class World01 {
     this._gap = gap;
     this._columnCount = columnCount;
     this._rowCount = rowCount;
-
     this._intervalForSetBomb = intervalForSetBomb;
+    this._cursors = scene.input.keyboard?.createCursorKeys();
+    this._pastMsForSetBomb = this._intervalForSetBomb - 1000;
+    this._onChangeState = onChangeState;
 
+    this._initBoardAndTiles(scene)
+    this._initBombs(scene);
+
+    this._player = new Player(scene, {
+      x: this._x,
+      y: this._y,
+      width: this._tileSize,
+      height: this._tileSize,
+    });
+  }
+
+  private _initBoardAndTiles(scene: Scene) {
     const boardWidth = (this._tileSize + this._gap) * (this._columnCount + 1);
     const boardHeight = (this._tileSize + this._gap) * (this._rowCount + 1);
     scene.add
@@ -78,7 +93,9 @@ class World01 {
           .setDisplaySize(this._tileSize, this._tileSize)
       })
     );
+  }
 
+  private _initBombs(scene: Scene) {
     const bombCount = Math.min(this._rowCount, this._columnCount) - 2;
     const explosionStep = this._tileSize + this._gap;
     const bombOptions = {
@@ -95,23 +112,6 @@ class World01 {
     this._bombs = [...new Array(bombCount)].map(() => {
       return new CrossBomb(scene, bombOptions)
     });
-
-    this._player = new Player(scene, {
-      x: this._x,
-      y: this._y,
-      width: this._tileSize,
-      height: this._tileSize,
-    });
-
-    this._timer = new Timer(scene, {
-      x: boardWidth + 20,
-      y: 100,
-    })
-    this._timer.start();
-
-    this._cursors = scene.input.keyboard?.createCursorKeys();
-
-    this._pastMsForSetBomb = this._intervalForSetBomb - 1000;
   }
 
   private get _step () {
@@ -120,6 +120,23 @@ class World01 {
 
   get isActive () {
     return this._state === 'active';
+  }
+
+  get x () {
+    return this._x - this._gap - this._tileSize / 2;
+  }
+  
+  get width () {
+    return (this._tileSize + this._gap) * (this._columnCount + 1);
+  }
+
+  private _setState(newState: World01State) {
+    if(this._state === newState) {
+      return;
+    }
+
+    this._state = newState;
+    this._onChangeState?.(this._state);
   }
 
   private _isValidToMove (character: Player, dir: Dir) {
@@ -189,6 +206,10 @@ class World01 {
   }
 
   private _updatePlayer(time: number, delta: number) {
+    if(this._state !== 'active') {
+      return;
+    }
+
     if(this._cursors) {
       if(this._cursors.left.isDown) {
         this._moveCharacterIfPossible(this._player, Dir.LEFT)
@@ -204,6 +225,10 @@ class World01 {
   }
 
   private _updateBombs(time: number, delta: number) {
+    if(this._state !== 'active') {
+      return;
+    }
+
     this._pastMsForSetBomb += delta;
     if(this._pastMsForSetBomb > this._intervalForSetBomb) {
       this._pastMsForSetBomb = 0;
@@ -213,10 +238,9 @@ class World01 {
   }
 
   private _playerDied() {
-    this._state = 'inactive';
+    this._setState('inactive');
     this._player.die();
     this._bombs.map(item => item.lockAsExploded())
-    this._timer.stop();
   }
 
   private _checkCollision() {
@@ -235,20 +259,19 @@ class World01 {
     }
   }
 
-  restart() {
+  start() {
     if(this.isActive) {
       return;
     }
+    this._setState('active');
     this._pastMsForSetBomb = this._intervalForSetBomb - 1000;
     this._bombs.map(item => item.init())
     this._player.init(this._x, this._y);
-    this._timer.start();
   }
 
   update (time: number, delta: number) {
     this._updatePlayer(time, delta);
     this._updateBombs(time, delta)
-    this._timer.update(time, delta);
 
     if(!this._player.isDead) {
       this._checkCollision();
